@@ -1,0 +1,19 @@
+#!/bin/sh
+# 迅雷快鸟 CLI 包装脚本
+# 用于在 OpenWrt ash 环境中调用 bash 脚本
+
+SCRIPT_PATH="/usr/share/xunlei-kuainiao/xunlei-kuainiao.sh"
+
+if [ ! -f "$SCRIPT_PATH" ]; then
+    echo "错误：找不到主脚本 $SCRIPT_PATH"
+    exit 1
+fi
+
+# 检查 bash 是否可用
+if ! command -v bash >/dev/null 2>&1; then
+    echo "错误：需要安装 bash，请运行：opkg install bash"
+    exit 1
+fi
+
+# 使用 bash 执行主脚本
+exec bash "$SCRIPT_PATH" "$@"
