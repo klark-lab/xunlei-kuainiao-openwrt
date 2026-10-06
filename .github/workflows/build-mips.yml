@@ -2,13 +2,13 @@ name: Build MIPS Package
 
   on:
     push:
-      branches: [ main ]
+      branches:
+        - main
     workflow_dispatch:
 
   jobs:
     build:
       runs-on: ubuntu-latest
-
       steps:
         - name: Checkout
           uses: actions/checkout@v4
@@ -16,8 +16,7 @@ name: Build MIPS Package
         - name: Install dependencies
           run: |
             sudo apt-get update
-            sudo apt-get install -y build-essential libncurses5-dev gawk git libssl-dev \
-              gettext zlib1g-dev swig unzip python3 python3-distutils rsync
+            sudo apt-get install -y build-essential libncurses5-dev gawk git libssl-dev gettext zlib1g-dev swig unzip python3 python3-distutils rsync
 
         - name: Download OpenWrt SDK
           run: |
@@ -34,12 +33,10 @@ name: Build MIPS Package
             mkdir -p package/xunlei-kuainiao
             cp -r ../xunlei-kuainiao-service/* package/xunlei-kuainiao/
             cp -r ../luci-app-xunleikuainiao package/
-            cat > .config << EOF
-            CONFIG_TARGET_ramips=y
-            CONFIG_TARGET_ramips_mt7621=y
-            CONFIG_PACKAGE_xunlei-kuainiao-service=y
-            CONFIG_PACKAGE_luci-app-xunleikuainiao=y
-            EOF
+            echo "CONFIG_TARGET_ramips=y" > .config
+            echo "CONFIG_TARGET_ramips_mt7621=y" >> .config
+            echo "CONFIG_PACKAGE_xunlei-kuainiao-service=y" >> .config
+            echo "CONFIG_PACKAGE_luci-app-xunleikuainiao=y" >> .config
             make defconfig
 
         - name: Build
@@ -59,4 +56,4 @@ name: Build MIPS Package
           with:
             name: xunlei-kuainiao-mips-packages
             path: output/*.ipk
-            retention-days: 80
+            retention-days: 90
