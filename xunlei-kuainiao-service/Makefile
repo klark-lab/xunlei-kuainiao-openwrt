@@ -13,7 +13,7 @@ include $(TOPDIR)/rules.mk
     SECTION:=net
     CATEGORY:=Network
     TITLE:=Xunlei KuaiNiao Speed Boost Service
-    DEPENDS:=+bash +curl +jq +openssl +util-linux
+    DEPENDS:=+bash +curl +jq
     PKGARCH:=all
   endef
 
