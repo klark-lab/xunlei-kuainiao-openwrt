@@ -59,4 +59,4 @@ name: Build MIPS Package
           with:
             name: xunlei-kuainiao-mips-packages
             path: output/*.ipk
-            retention-days: 90
+            retention-days: 80
