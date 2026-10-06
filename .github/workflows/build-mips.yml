@@ -1,9 +1,9 @@
-name: Build MIPS
+  name: Build MIPS
 
-on:
-  workflow_dispatch:
+  on:
+    workflow_dispatch:
 
-jobs:
+  jobs:
     build:
       runs-on: ubuntu-latest
       steps:
@@ -11,9 +11,9 @@ jobs:
 
         - name: Install deps
           run: sudo apt-get update && sudo apt-get install -y build-essential libncurses5-dev gawk git libssl-dev gettext zlib1g-dev swig unzip python3 python3-distutils rsync
-          
+
         - name: Download SDK
-          run: | 
+          run: |
             wget -q https://downloads.openwrt.org/releases/23.05.3/targets/ramips/mt7621/openwrt-sdk-23.05.3-ramips-mt7621_gcc-12.3.0_musl.Linux-x86_64.tar.xz -O sdk.tar.xz
             tar xf sdk.tar.xz
             mv openwrt-sdk-* openwrt-sdk
