@@ -25,8 +25,8 @@
             cd openwrt-sdk
             ./scripts/feeds update -a
             ./scripts/feeds install -a
-            mkdir -p package/xunlei-kuainiao
-            cp -r $GITHUB_WORKSPACE/xunlei-kuainiao-service/* package/xunlei-kuainiao/
+            mkdir -p package/xunlei-kuainiao-service
+            cp -r $GITHUB_WORKSPACE/xunlei-kuainiao-service/* package/xunlei-kuainiao-service/
             cp -r $GITHUB_WORKSPACE/luci-app-xunleikuainiao package/
             echo CONFIG_TARGET_ramips=y > .config
             echo CONFIG_TARGET_ramips_mt7621=y >> .config
