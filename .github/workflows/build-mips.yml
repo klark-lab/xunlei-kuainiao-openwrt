@@ -1,59 +1,43 @@
-name: Build MIPS Package
+name: Build MIPS
 
   on:
-    push:
-      branches:
-        - main
     workflow_dispatch:
 
   jobs:
     build:
       runs-on: ubuntu-latest
       steps:
-        - name: Checkout
-          uses: actions/checkout@v4
+        - uses: actions/checkout@v4
 
-        - name: Install dependencies
-          run: |
-            sudo apt-get update
-            sudo apt-get install -y build-essential libncurses5-dev gawk git libssl-dev gettext zlib1g-dev swig unzip python3 python3-distutils rsync
+        - name: Install deps
+          run: sudo apt-get update && sudo apt-get install -y build-essential libncurses5-dev gawk git libssl-dev gettext zlib1g-dev swig unzip python3
+  python3-distutils rsync
 
-        - name: Download OpenWrt SDK
+        - name: Download SDK
           run: |
             wget -q
-  "https://downloads.openwrt.org/releases/23.05.3/targets/ramips/mt7621/openwrt-sdk-23.05.3-ramips-mt7621_gcc-12.3.0_musl.Linux-x86_64.tar.xz" -O sdk.tar.xz
+  https://downloads.openwrt.org/releases/23.05.3/targets/ramips/mt7621/openwrt-sdk-23.05.3-ramips-mt7621_gcc-12.3.0_musl.Linux-x86_64.tar.xz -O sdk.tar.xz
             tar xf sdk.tar.xz
             mv openwrt-sdk-* openwrt-sdk
 
-        - name: Setup packages
+        - name: Build
           run: |
             cd openwrt-sdk
             ./scripts/feeds update -a
             ./scripts/feeds install -a
             mkdir -p package/xunlei-kuainiao
-            cp -r ../xunlei-kuainiao-service/* package/xunlei-kuainiao/
-            cp -r ../luci-app-xunleikuainiao package/
-            echo "CONFIG_TARGET_ramips=y" > .config
-            echo "CONFIG_TARGET_ramips_mt7621=y" >> .config
-            echo "CONFIG_PACKAGE_xunlei-kuainiao-service=y" >> .config
-            echo "CONFIG_PACKAGE_luci-app-xunleikuainiao=y" >> .config
+            cp -r $GITHUB_WORKSPACE/xunlei-kuainiao-service/* package/xunlei-kuainiao/
+            cp -r $GITHUB_WORKSPACE/luci-app-xunleikuainiao package/
+            echo CONFIG_TARGET_ramips=y > .config
+            echo CONFIG_TARGET_ramips_mt7621=y >> .config
+            echo CONFIG_PACKAGE_xunlei-kuainiao-service=y >> .config
+            echo CONFIG_PACKAGE_luci-app-xunleikuainiao=y >> .config
             make defconfig
-
-        - name: Build
-          run: |
-            cd openwrt-sdk
             make package/xunlei-kuainiao-service/compile V=s
             make package/luci-app-xunleikuainiao/compile V=s
 
-        - name: Collect packages
-          run: |
-            mkdir -p output
-            find openwrt-sdk/bin/packages/ -name "*.ipk" -exec cp {} output/ \; 2>/dev/null || true
-            ls -la output/
-
-        - name: Upload artifacts
+        - name: Upload
           uses: actions/upload-artifact@v4
           with:
-            name: xunlei-kuainiao-mips-packages
-            path: output/*.ipk
-            retention-days: 90
+            name: xunlei-kuainiao-mips
+            path: openwrt-sdk/bin/packages/**/*.ipk
