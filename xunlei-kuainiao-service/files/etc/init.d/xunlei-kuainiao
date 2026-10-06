@@ -1,0 +1,41 @@
+#!/bin/sh /etc/rc.common
+  START=99
+  STOP=10
+  USE_PROCD=1
+
+  PROG=/usr/bin/xunlei-kuainiao-cli
+  LOG_FILE=/var/log/xunlei-kuainiao/xunlei-kuainiao.log
+
+  start_service() {
+      local enabled
+      config_load xunlei-kuainiao
+      config_get enabled main enabled 1
+      [ "$enabled" != "1" ] && return 0
+      mkdir -p /var/log/xunlei-kuainiao /var/lib/xunlei-kuainiao
+      $PROG run >> "$LOG_FILE" 2>&1 &
+      setup_cron
+  }
+
+  stop_service() {
+      remove_cron
+  }
+
+  setup_cron() {
+      local auto_renew renew_cron
+      config_load xunlei-kuainiao
+      config_get auto_renew main auto_renew 1
+      config_get renew_cron main renew_cron "15 3 * * *"
+      if [ "$auto_renew" = "1" ]; then
+          remove_cron
+          echo "$renew_cron $PROG run >> $LOG_FILE 2>&1" >> /etc/crontabs/root
+          /etc/init.d/cron restart
+      fi
+  }
+
+  remove_cron() {
+      sed -i '/xunlei-kuainiao-cli/d' /etc/crontabs/root 2>/dev/null || true
+  }
+
+  service_triggers() {
+      procd_add_reload_trigger "xunlei-kuainiao"
+  }
