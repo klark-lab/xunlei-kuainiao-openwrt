@@ -1,0 +1,67 @@
+#!/bin/sh /etc/rc.common
+# 迅雷快鸟提速服务 init 脚本
+
+START=99
+STOP=10
+
+USE_PROCD=1
+
+PROG=/usr/bin/xunlei-kuainiao-cli
+LOG_FILE=/var/log/xunlei-kuainiao/xunlei-kuainiao.log
+
+start_service() {
+    local enabled
+    config_load xunlei-kuainiao
+    config_get enabled main enabled 1
+
+    if [ "$enabled" != "1" ]; then
+        echo "迅雷快鸟提速服务已禁用"
+        return 0
+    fi
+
+    # 确保日志目录存在
+    mkdir -p /var/log/xunlei-kuainiao
+    mkdir -p /var/lib/xunlei-kuainiao
+
+    echo "启动迅雷快鸟提速服务..."
+
+    # 执行提速
+    $PROG run >> "$LOG_FILE" 2>&1 &
+
+    # 设置 cron 任务
+    setup_cron
+}
+
+stop_service() {
+    echo "停止迅雷快鸟提速服务..."
+
+    # 移除 cron 任务
+    remove_cron
+}
+
+setup_cron() {
+    local auto_renew renew_cron
+    config_load xunlei-kuainiao
+    config_get auto_renew main auto_renew 1
+    config_get renew_cron main renew_cron "15 3 * * *"
+
+    if [ "$auto_renew" = "1" ]; then
+        # 移除旧的 cron 任务
+        remove_cron
+
+        # 添加新的 cron 任务
+        echo "$renew_cron $PROG run >> $LOG_FILE 2>&1" >> /etc/crontabs/root
+        /etc/init.d/cron restart
+
+        echo "已设置自动续期 cron 任务：$renew_cron"
+    fi
+}
+
+remove_cron() {
+    # 移除 xunlei-kuainiao 相关的 cron 任务
+    sed -i '/xunlei-kuainiao-cli/d' /etc/crontabs/root 2>/dev/null || true
+}
+
+service_triggers() {
+    procd_add_reload_trigger "xunlei-kuainiao"
+}
